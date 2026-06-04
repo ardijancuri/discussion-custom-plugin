@@ -255,7 +255,7 @@ final class CPR_Plugin {
 			wp_die( esc_html__( 'You are not allowed to view participation registrations.', 'confirm-participation-registration' ) );
 		}
 
-		$posts            = self::get_published_posts();
+		$posts            = self::get_enabled_registration_posts();
 		$selected_post_id = isset( $_GET['post_id'] ) ? absint( $_GET['post_id'] ) : 0;
 		$selected_post    = $selected_post_id ? get_post( $selected_post_id ) : null;
 
@@ -278,7 +278,7 @@ final class CPR_Plugin {
 					<tbody>
 						<?php if ( empty( $posts ) ) : ?>
 							<tr>
-								<td colspan="4"><?php esc_html_e( 'No published posts were found.', 'confirm-participation-registration' ); ?></td>
+								<td colspan="4"><?php esc_html_e( 'No enabled participation posts were found.', 'confirm-participation-registration' ); ?></td>
 							</tr>
 						<?php else : ?>
 							<?php foreach ( $posts as $post ) : ?>
@@ -303,7 +303,7 @@ final class CPR_Plugin {
 				</table>
 			</div>
 
-			<?php if ( $selected_post instanceof WP_Post && 'post' === $selected_post->post_type ) : ?>
+			<?php if ( $selected_post instanceof WP_Post && 'post' === $selected_post->post_type && self::is_registration_enabled( $selected_post->ID ) ) : ?>
 				<?php $registrations = self::get_registrations_for_post( $selected_post->ID ); ?>
 				<div class="cpr-panel">
 					<div class="cpr-title-row">
@@ -351,7 +351,7 @@ final class CPR_Plugin {
 				</div>
 			<?php elseif ( $selected_post_id ) : ?>
 				<div class="notice notice-error">
-					<p><?php esc_html_e( 'The selected post could not be found.', 'confirm-participation-registration' ); ?></p>
+					<p><?php esc_html_e( 'The selected post could not be found or participation is not enabled for it.', 'confirm-participation-registration' ); ?></p>
 				</div>
 			<?php endif; ?>
 		</div>
@@ -869,6 +869,26 @@ final class CPR_Plugin {
 				'numberposts'      => -1,
 				'orderby'          => 'date',
 				'order'            => 'DESC',
+				'suppress_filters' => false,
+			)
+		);
+	}
+
+	/**
+	 * Get published posts where the participation form is enabled.
+	 *
+	 * @return WP_Post[]
+	 */
+	private static function get_enabled_registration_posts() {
+		return get_posts(
+			array(
+				'post_type'        => 'post',
+				'post_status'      => 'publish',
+				'numberposts'      => -1,
+				'orderby'          => 'date',
+				'order'            => 'DESC',
+				'meta_key'         => self::META_ENABLED,
+				'meta_value'       => '1',
 				'suppress_filters' => false,
 			)
 		);

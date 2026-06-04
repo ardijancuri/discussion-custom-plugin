@@ -58,6 +58,7 @@ final class CPR_Plugin {
 			add_action( 'admin_init', array( $this, 'register_direct_admin_page_hooks' ) );
 			add_action( 'admin_post_cpr_update_registration_status', array( $this, 'handle_update_registration_status' ) );
 			add_action( 'admin_post_cpr_bulk_update_registration_status', array( $this, 'handle_bulk_update_registration_status' ) );
+			add_action( 'admin_post_cpr_delete_registration', array( $this, 'handle_delete_registration' ) );
 			add_action( 'admin_post_cpr_export_registrations_csv', array( $this, 'handle_csv_export' ) );
 		}
 	}
@@ -266,6 +267,7 @@ final class CPR_Plugin {
 		?>
 		<div class="wrap cpr-admin">
 			<h1><?php esc_html_e( 'Participation Registrations', 'confirm-participation-registration' ); ?></h1>
+			<?php $this->render_admin_notice(); ?>
 
 			<div class="cpr-panel">
 				<h2><?php esc_html_e( 'Published Posts Overview', 'confirm-participation-registration' ); ?></h2>
@@ -330,12 +332,13 @@ final class CPR_Plugin {
 								<th><?php esc_html_e( 'Prénom', 'confirm-participation-registration' ); ?></th>
 								<th><?php esc_html_e( 'Hôpital / Institution', 'confirm-participation-registration' ); ?></th>
 								<th><?php esc_html_e( 'Adresse e-mail', 'confirm-participation-registration' ); ?></th>
+								<th><?php esc_html_e( 'Action', 'confirm-participation-registration' ); ?></th>
 							</tr>
 						</thead>
 						<tbody>
 							<?php if ( empty( $registrations ) ) : ?>
 								<tr>
-									<td colspan="6"><?php esc_html_e( 'No registrations yet.', 'confirm-participation-registration' ); ?></td>
+									<td colspan="7"><?php esc_html_e( 'No registrations yet.', 'confirm-participation-registration' ); ?></td>
 								</tr>
 							<?php else : ?>
 								<?php foreach ( $registrations as $registration ) : ?>
@@ -346,6 +349,17 @@ final class CPR_Plugin {
 										<td><?php echo esc_html( $registration->first_name ); ?></td>
 										<td><?php echo esc_html( $registration->hospital_institution ); ?></td>
 										<td><?php echo esc_html( $registration->email_address ); ?></td>
+										<td>
+											<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" onsubmit="return confirm('<?php echo esc_js( __( 'Delete this registration?', 'confirm-participation-registration' ) ); ?>');">
+												<input type="hidden" name="action" value="cpr_delete_registration" />
+												<input type="hidden" name="registration_id" value="<?php echo esc_attr( $registration->id ); ?>" />
+												<input type="hidden" name="post_id" value="<?php echo esc_attr( $selected_post->ID ); ?>" />
+												<?php wp_nonce_field( 'cpr_delete_registration_' . $registration->id ); ?>
+												<button type="submit" class="button button-small button-link-delete">
+													<?php esc_html_e( 'Delete', 'confirm-participation-registration' ); ?>
+												</button>
+											</form>
+										</td>
 									</tr>
 								<?php endforeach; ?>
 							<?php endif; ?>
@@ -398,6 +412,31 @@ final class CPR_Plugin {
 		}
 
 		$this->redirect_to_forms_page( 'bulk_updated' );
+	}
+
+	/**
+	 * Delete one saved participation registration.
+	 */
+	public function handle_delete_registration() {
+		if ( ! current_user_can( self::ADMIN_CAPABILITY ) ) {
+			wp_die( esc_html__( 'You are not allowed to delete participation registrations.', 'confirm-participation-registration' ) );
+		}
+
+		$registration_id = isset( $_POST['registration_id'] ) ? absint( $_POST['registration_id'] ) : 0;
+		$fallback_post_id = isset( $_POST['post_id'] ) ? absint( $_POST['post_id'] ) : 0;
+
+		check_admin_referer( 'cpr_delete_registration_' . $registration_id );
+
+		$registration = self::get_registration( $registration_id );
+
+		if ( ! $registration ) {
+			$this->redirect_to_registrations_page( $fallback_post_id, 'delete_failed' );
+		}
+
+		$post_id = (int) $registration->post_id;
+		$deleted = self::delete_registration( $registration_id );
+
+		$this->redirect_to_registrations_page( $post_id, $deleted ? 'registration_deleted' : 'delete_failed' );
 	}
 
 	/**
@@ -937,6 +976,9 @@ final class CPR_Plugin {
 			.cpr-admin .cpr-table th {
 				vertical-align: middle;
 			}
+			.cpr-admin .cpr-table form {
+				margin: 0;
+			}
 		</style>
 		<?php
 	}
@@ -948,16 +990,21 @@ final class CPR_Plugin {
 		$notice = isset( $_GET['cpr_notice'] ) ? sanitize_key( wp_unslash( $_GET['cpr_notice'] ) ) : '';
 
 		$messages = array(
-			'updated'      => __( 'Participation form status updated.', 'confirm-participation-registration' ),
-			'bulk_updated' => __( 'Participation form statuses updated.', 'confirm-participation-registration' ),
+			'updated'              => __( 'Participation form status updated.', 'confirm-participation-registration' ),
+			'bulk_updated'         => __( 'Participation form statuses updated.', 'confirm-participation-registration' ),
+			'registration_deleted' => __( 'Registration deleted.', 'confirm-participation-registration' ),
+			'delete_failed'        => __( 'Registration could not be deleted.', 'confirm-participation-registration' ),
 		);
 
 		if ( ! isset( $messages[ $notice ] ) ) {
 			return;
 		}
 
+		$notice_type = 'delete_failed' === $notice ? 'error' : 'success';
+
 		printf(
-			'<div class="notice notice-success is-dismissible"><p>%s</p></div>',
+			'<div class="notice notice-%1$s is-dismissible"><p>%2$s</p></div>',
+			esc_attr( $notice_type ),
 			esc_html( $messages[ $notice ] )
 		);
 	}
@@ -1027,6 +1074,49 @@ final class CPR_Plugin {
 				'SELECT * FROM ' . self::get_table_name() . ' WHERE post_id = %d ORDER BY created_at_gmt DESC, id DESC',
 				$post_id
 			)
+		);
+	}
+
+	/**
+	 * Get one registration by ID.
+	 *
+	 * @param int $registration_id Registration ID.
+	 * @return object|null
+	 */
+	private static function get_registration( $registration_id ) {
+		global $wpdb;
+
+		if ( ! $registration_id ) {
+			return null;
+		}
+
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				'SELECT * FROM ' . self::get_table_name() . ' WHERE id = %d',
+				$registration_id
+			)
+		);
+	}
+
+	/**
+	 * Delete one registration by ID.
+	 *
+	 * @param int $registration_id Registration ID.
+	 * @return bool
+	 */
+	private static function delete_registration( $registration_id ) {
+		global $wpdb;
+
+		if ( ! $registration_id ) {
+			return false;
+		}
+
+		return false !== $wpdb->delete(
+			self::get_table_name(),
+			array(
+				'id' => $registration_id,
+			),
+			array( '%d' )
 		);
 	}
 
@@ -1187,6 +1277,24 @@ final class CPR_Plugin {
 					'cpr_notice' => $notice,
 				),
 				admin_url( 'edit.php' )
+			)
+		);
+		exit;
+	}
+
+	/**
+	 * Redirect to the registrations admin page.
+	 *
+	 * @param int    $post_id Post ID.
+	 * @param string $notice Notice key.
+	 */
+	private function redirect_to_registrations_page( $post_id, $notice ) {
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'cpr_notice' => $notice,
+				),
+				self::get_registrations_page_url( $post_id )
 			)
 		);
 		exit;

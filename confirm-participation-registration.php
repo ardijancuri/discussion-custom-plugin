@@ -685,10 +685,16 @@ final class CPR_Plugin {
 				margin: 0 auto 18px;
 				max-width: 760px;
 				padding: 12px 14px;
+				transition: opacity 220ms ease, transform 220ms ease;
 			}
 			.cpr-registration__notice.is-success {
 				background: #f3fbf6;
 				color: #17643a;
+			}
+			.cpr-registration__notice.is-hiding {
+				opacity: 0;
+				pointer-events: none;
+				transform: translateY(-4px);
 			}
 			.cpr-registration__notice.is-error {
 				background: #fff7f7;
@@ -764,6 +770,29 @@ final class CPR_Plugin {
 				}
 			}
 			'
+		);
+
+		wp_register_script( 'confirm-participation-registration', false, array(), '1.0.0', true );
+		wp_enqueue_script( 'confirm-participation-registration' );
+		wp_add_inline_script(
+			'confirm-participation-registration',
+			"
+			document.addEventListener('DOMContentLoaded', function () {
+				var successNotice = document.querySelector('.cpr-registration__notice.is-success');
+
+				if (!successNotice) {
+					return;
+				}
+
+				window.setTimeout(function () {
+					successNotice.classList.add('is-hiding');
+
+					window.setTimeout(function () {
+						successNotice.remove();
+					}, 260);
+				}, 4500);
+			});
+			"
 		);
 	}
 

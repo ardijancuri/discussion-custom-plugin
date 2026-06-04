@@ -1007,6 +1007,15 @@ final class CPR_Plugin {
 			esc_attr( $notice_type ),
 			esc_html( $messages[ $notice ] )
 		);
+		?>
+		<script>
+			if (window.history && window.history.replaceState) {
+				const cprNoticeUrl = new URL(window.location.href);
+				cprNoticeUrl.searchParams.delete('cpr_notice');
+				window.history.replaceState({}, document.title, cprNoticeUrl.toString());
+			}
+		</script>
+		<?php
 	}
 
 	/**

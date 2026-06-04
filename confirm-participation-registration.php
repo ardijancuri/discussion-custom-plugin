@@ -736,14 +736,16 @@ final class CPR_Plugin {
 					padding-right: 0;
 				}
 				.cpr-registration {
+					margin-bottom: 76px;
 					margin-top: 32px;
 					padding-top: 24px;
 				}
 				.cpr-registration__form {
-					grid-template-columns: 1fr;
+					column-gap: 12px;
+					grid-template-columns: repeat(2, minmax(0, 1fr));
 					max-width: none;
+					row-gap: 14px;
 				}
-				.cpr-registration__field,
 				.cpr-registration__field--full {
 					grid-column: 1 / -1;
 				}

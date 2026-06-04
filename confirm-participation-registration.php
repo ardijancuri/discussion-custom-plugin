@@ -546,7 +546,7 @@ final class CPR_Plugin {
 				padding-top: 30px;
 			}
 			.cpr-registration__title {
-				color: var(--cpr-accent);
+				color: #145269;
 				font-size: clamp(1.25rem, 2vw, 1.65rem);
 				line-height: 1.25;
 				margin: 0 auto 18px;
@@ -643,22 +643,22 @@ final class CPR_Plugin {
 
 				<p class="cpr-registration__field cpr-registration__field--last-name">
 					<label for="cpr_last_name"><?php esc_html_e( 'Nom', 'confirm-participation-registration' ); ?></label>
-					<input id="cpr_last_name" name="cpr_last_name" type="text" autocomplete="family-name" required aria-required="true" />
+					<input id="cpr_last_name" name="cpr_last_name" type="text" autocomplete="family-name" placeholder="<?php esc_attr_e( 'Nom', 'confirm-participation-registration' ); ?>" required aria-required="true" />
 				</p>
 
 				<p class="cpr-registration__field cpr-registration__field--first-name">
 					<label for="cpr_first_name"><?php esc_html_e( 'Prénom', 'confirm-participation-registration' ); ?></label>
-					<input id="cpr_first_name" name="cpr_first_name" type="text" autocomplete="given-name" required aria-required="true" />
+					<input id="cpr_first_name" name="cpr_first_name" type="text" autocomplete="given-name" placeholder="<?php esc_attr_e( 'Prénom', 'confirm-participation-registration' ); ?>" required aria-required="true" />
 				</p>
 
 				<p class="cpr-registration__field cpr-registration__field--full">
 					<label for="cpr_hospital_institution"><?php esc_html_e( 'Hôpital / Institution', 'confirm-participation-registration' ); ?></label>
-					<input id="cpr_hospital_institution" name="cpr_hospital_institution" type="text" autocomplete="organization" required aria-required="true" />
+					<input id="cpr_hospital_institution" name="cpr_hospital_institution" type="text" autocomplete="organization" placeholder="<?php esc_attr_e( 'Hôpital / Institution', 'confirm-participation-registration' ); ?>" required aria-required="true" />
 				</p>
 
 				<p class="cpr-registration__field cpr-registration__field--full">
 					<label for="cpr_email_address"><?php esc_html_e( 'Adresse e-mail', 'confirm-participation-registration' ); ?></label>
-					<input id="cpr_email_address" name="cpr_email_address" type="email" autocomplete="email" required aria-required="true" />
+					<input id="cpr_email_address" name="cpr_email_address" type="email" autocomplete="email" placeholder="<?php esc_attr_e( 'Adresse e-mail', 'confirm-participation-registration' ); ?>" required aria-required="true" />
 				</p>
 
 				<button class="button cpr-registration__submit" type="submit"><?php esc_html_e( 'S’inscrire', 'confirm-participation-registration' ); ?></button>

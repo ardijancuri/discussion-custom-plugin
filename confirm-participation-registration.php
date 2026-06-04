@@ -45,6 +45,9 @@ final class CPR_Plugin {
 		add_action( 'init', array( $this, 'maybe_install_table' ) );
 		add_filter( 'the_content', array( $this, 'append_registration_form' ), 20 );
 		add_filter( 'comments_template', array( $this, 'hide_comments_template_for_enabled_posts' ), 20 );
+		add_filter( 'astra_apply_hero_header_banner', array( $this, 'disable_astra_single_entry_banner' ), 20 );
+		add_filter( 'astra_single_layout_one_banner_visibility', array( $this, 'hide_astra_single_post_banner' ), 20 );
+		add_action( 'astra_primary_content_top', array( $this, 'render_single_post_hero' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_frontend_styles' ) );
 
 		add_action( 'admin_post_cpr_submit_registration', array( $this, 'handle_registration_submission' ) );
@@ -525,6 +528,70 @@ final class CPR_Plugin {
 	}
 
 	/**
+	 * Disable Astra's outside single-entry banner for posts.
+	 *
+	 * @param bool $enabled Whether Astra should render its hero banner.
+	 * @return bool
+	 */
+	public function disable_astra_single_entry_banner( $enabled ) {
+		if ( self::should_render_single_post_hero() ) {
+			return false;
+		}
+
+		return $enabled;
+	}
+
+	/**
+	 * Hide Astra's built-in post banner so the plugin can control image/title order.
+	 *
+	 * @param bool $visible Current banner visibility.
+	 * @return bool
+	 */
+	public function hide_astra_single_post_banner( $visible ) {
+		if ( self::should_render_single_post_hero() ) {
+			return false;
+		}
+
+		return $visible;
+	}
+
+	/**
+	 * Render the single post hero with featured image first and title beneath it.
+	 */
+	public function render_single_post_hero() {
+		if ( ! self::should_render_single_post_hero() ) {
+			return;
+		}
+
+		$post_id = get_queried_object_id();
+
+		if ( ! $post_id ) {
+			return;
+		}
+
+		?>
+		<section class="cpr-single-hero" aria-labelledby="cpr-single-hero-title">
+			<?php if ( has_post_thumbnail( $post_id ) ) : ?>
+				<div class="cpr-single-hero__media">
+					<?php
+					echo get_the_post_thumbnail(
+						$post_id,
+						'full',
+						array(
+							'class' => 'cpr-single-hero__image',
+						)
+					);
+					?>
+				</div>
+			<?php endif; ?>
+			<div class="cpr-single-hero__body">
+				<h1 id="cpr-single-hero-title" class="cpr-single-hero__title"><?php echo esc_html( get_the_title( $post_id ) ); ?></h1>
+			</div>
+		</section>
+		<?php
+	}
+
+	/**
 	 * Enqueue scoped frontend styles for the registration form.
 	 */
 	public function enqueue_frontend_styles() {
@@ -537,6 +604,35 @@ final class CPR_Plugin {
 		wp_add_inline_style(
 			'confirm-participation-registration',
 			'
+			.single-post .ast-single-entry-banner,
+			.single-post .site-content .ast-single-post-featured-section {
+				display: none;
+			}
+			.cpr-single-hero {
+				margin: 0 auto 42px;
+				max-width: var(--ast-normal-container-width, 1200px);
+				width: 100%;
+			}
+			.cpr-single-hero__media {
+				margin: 0 0 26px;
+			}
+			.cpr-single-hero__image {
+				display: block;
+				height: auto;
+				max-width: 100%;
+				width: 100%;
+			}
+			.cpr-single-hero__body {
+				margin: 0 auto;
+				max-width: 760px;
+				width: 100%;
+			}
+			.cpr-single-hero__title {
+				color: #145269;
+				font-size: clamp(1.75rem, 3vw, 2.75rem);
+				line-height: 1.18;
+				margin: 0;
+			}
 			.cpr-registration {
 				--cpr-accent: var(--ast-global-color-0, #005a70);
 				--cpr-border: var(--ast-single-post-border, var(--ast-border-color, #dce7ec));
@@ -602,6 +698,15 @@ final class CPR_Plugin {
 				margin-top: 4px;
 			}
 			@media (max-width: 767px) {
+				.cpr-single-hero {
+					margin-bottom: 32px;
+				}
+				.cpr-single-hero__media {
+					margin-bottom: 20px;
+				}
+				.cpr-single-hero__title {
+					font-size: 1.75rem;
+				}
 				.cpr-registration {
 					margin-top: 32px;
 					padding-top: 24px;
@@ -956,6 +1061,15 @@ final class CPR_Plugin {
 			&& in_the_loop()
 			&& is_main_query()
 			&& self::is_registration_enabled( get_the_ID() );
+	}
+
+	/**
+	 * Determine whether the plugin-controlled single post hero should render.
+	 *
+	 * @return bool
+	 */
+	private static function should_render_single_post_hero() {
+		return ! is_admin() && is_singular( 'post' );
 	}
 
 	/**

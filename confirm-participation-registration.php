@@ -633,6 +633,21 @@ final class CPR_Plugin {
 				line-height: 1.18;
 				margin: 0;
 			}
+			@media (min-width: 768px) {
+				.cpr-single-hero {
+					margin-bottom: 18px;
+				}
+				.single-post .cpr-single-hero + .site-main .ast-article-single {
+					padding-top: 0;
+				}
+				.single-post .cpr-single-hero + .site-main .entry-content {
+					margin-top: 0;
+					padding-top: 0;
+				}
+				.single-post .cpr-single-hero + .site-main .entry-content > :first-child {
+					margin-top: 0;
+				}
+			}
 			.cpr-registration {
 				--cpr-accent: var(--ast-global-color-0, #005a70);
 				--cpr-border: var(--ast-single-post-border, var(--ast-border-color, #dce7ec));

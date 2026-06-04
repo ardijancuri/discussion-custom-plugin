@@ -623,8 +623,11 @@ final class CPR_Plugin {
 				width: 100%;
 			}
 			.cpr-single-hero__body {
+				box-sizing: border-box;
 				margin: 0 auto;
-				max-width: 760px;
+				max-width: none;
+				padding-left: 6.67em;
+				padding-right: 6.67em;
 				width: 100%;
 			}
 			.cpr-single-hero__title {
@@ -646,6 +649,12 @@ final class CPR_Plugin {
 				}
 				.single-post .cpr-single-hero + .site-main .entry-content > :first-child {
 					margin-top: 0;
+				}
+			}
+			@media (max-width: 1200px) and (min-width: 768px) {
+				.cpr-single-hero__body {
+					padding-left: 2.4em;
+					padding-right: 2.4em;
 				}
 			}
 			.cpr-registration {
@@ -721,6 +730,10 @@ final class CPR_Plugin {
 				}
 				.cpr-single-hero__title {
 					font-size: 1.75rem;
+				}
+				.cpr-single-hero__body {
+					padding-left: 0;
+					padding-right: 0;
 				}
 				.cpr-registration {
 					margin-top: 32px;

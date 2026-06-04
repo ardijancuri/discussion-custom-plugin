@@ -669,7 +669,14 @@ final class CPR_Plugin {
 				color: #145269;
 				font-size: clamp(1.25rem, 2vw, 1.65rem);
 				line-height: 1.25;
-				margin: 0 auto 18px;
+				margin: 0 auto 8px;
+				max-width: 760px;
+			}
+			.cpr-registration__description {
+				color: var(--cpr-muted);
+				font-size: 0.98rem;
+				line-height: 1.55;
+				margin: 0 auto 20px;
 				max-width: 760px;
 			}
 			.cpr-registration__notice {
@@ -773,6 +780,7 @@ final class CPR_Plugin {
 		?>
 		<section id="cpr-registration" class="cpr-registration" aria-labelledby="cpr-registration-title">
 			<h2 id="cpr-registration-title" class="cpr-registration__title"><?php esc_html_e( 'Confirmez votre participation', 'confirm-participation-registration' ); ?></h2>
+			<p class="cpr-registration__description"><?php esc_html_e( 'Pour confirmer votre participation, veuillez compléter le formulaire d’inscription ci-dessous :', 'confirm-participation-registration' ); ?></p>
 			<?php echo $notice; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 			<form class="cpr-registration__form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 				<input type="hidden" name="action" value="cpr_submit_registration" />

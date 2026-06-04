@@ -128,6 +128,25 @@ final class CPR_Plugin {
 			self::REGISTRATIONS_SLUG,
 			array( $this, 'render_registrations_page' )
 		);
+
+		// Allow saved/direct admin.php?page=... links to load instead of showing "Cannot load".
+		add_submenu_page(
+			'admin.php',
+			esc_html__( 'Participation Forms', 'confirm-participation-registration' ),
+			esc_html__( 'Participation Forms', 'confirm-participation-registration' ),
+			'manage_options',
+			self::FORMS_PAGE_SLUG,
+			array( $this, 'render_forms_page' )
+		);
+
+		add_submenu_page(
+			'admin.php',
+			esc_html__( 'Participation Registrations', 'confirm-participation-registration' ),
+			esc_html__( 'Participation Registrations', 'confirm-participation-registration' ),
+			'manage_options',
+			self::REGISTRATIONS_SLUG,
+			array( $this, 'render_registrations_page' )
+		);
 	}
 
 	/**

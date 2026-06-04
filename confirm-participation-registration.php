@@ -549,12 +549,14 @@ final class CPR_Plugin {
 				color: var(--cpr-accent);
 				font-size: clamp(1.25rem, 2vw, 1.65rem);
 				line-height: 1.25;
-				margin: 0 0 18px;
+				margin: 0 auto 18px;
+				max-width: 760px;
 			}
 			.cpr-registration__notice {
 				border: 1px solid var(--cpr-border);
 				border-radius: 8px;
-				margin: 0 0 18px;
+				margin: 0 auto 18px;
+				max-width: 760px;
 				padding: 12px 14px;
 			}
 			.cpr-registration__notice.is-success {
@@ -569,8 +571,11 @@ final class CPR_Plugin {
 				display: grid;
 				column-gap: 20px;
 				grid-template-columns: repeat(2, minmax(0, 1fr));
+				margin-left: auto;
+				margin-right: auto;
 				max-width: 760px;
 				row-gap: 16px;
+				width: 100%;
 			}
 			.cpr-registration__field {
 				display: grid;

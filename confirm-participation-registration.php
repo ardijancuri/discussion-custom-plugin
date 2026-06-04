@@ -635,7 +635,7 @@ final class CPR_Plugin {
 			}
 			@media (min-width: 768px) {
 				.cpr-single-hero {
-					margin-bottom: 18px;
+					margin-bottom: 34px;
 				}
 				.single-post .cpr-single-hero + .site-main .ast-article-single {
 					padding-top: 0;

@@ -18,6 +18,7 @@ final class CPR_Plugin {
 	const META_ENABLED        = '_cpr_registration_enabled';
 	const NONCE_ACTION        = 'cpr_submit_registration';
 	const NONCE_FIELD         = 'cpr_registration_nonce';
+	const ADMIN_CAPABILITY    = 'edit_others_posts';
 	const FORMS_PAGE_SLUG     = 'cpr-participation-forms';
 	const REGISTRATIONS_SLUG  = 'cpr-participation-registrations';
 	const EMPTY_COMMENTS_FILE = 'empty-comments.php';
@@ -51,6 +52,7 @@ final class CPR_Plugin {
 
 		if ( is_admin() ) {
 			add_action( 'admin_menu', array( $this, 'register_admin_pages' ) );
+			add_action( 'admin_init', array( $this, 'register_direct_admin_page_hooks' ) );
 			add_action( 'admin_post_cpr_update_registration_status', array( $this, 'handle_update_registration_status' ) );
 			add_action( 'admin_post_cpr_bulk_update_registration_status', array( $this, 'handle_bulk_update_registration_status' ) );
 			add_action( 'admin_post_cpr_export_registrations_csv', array( $this, 'handle_csv_export' ) );
@@ -115,7 +117,7 @@ final class CPR_Plugin {
 			'edit.php',
 			esc_html__( 'Participation Forms', 'confirm-participation-registration' ),
 			esc_html__( 'Participation Forms', 'confirm-participation-registration' ),
-			'manage_options',
+			self::ADMIN_CAPABILITY,
 			self::FORMS_PAGE_SLUG,
 			array( $this, 'render_forms_page' )
 		);
@@ -124,7 +126,7 @@ final class CPR_Plugin {
 			'edit.php',
 			esc_html__( 'Participation Registrations', 'confirm-participation-registration' ),
 			esc_html__( 'Participation Registrations', 'confirm-participation-registration' ),
-			'manage_options',
+			self::ADMIN_CAPABILITY,
 			self::REGISTRATIONS_SLUG,
 			array( $this, 'render_registrations_page' )
 		);
@@ -134,7 +136,7 @@ final class CPR_Plugin {
 			'admin.php',
 			esc_html__( 'Participation Forms', 'confirm-participation-registration' ),
 			esc_html__( 'Participation Forms', 'confirm-participation-registration' ),
-			'manage_options',
+			self::ADMIN_CAPABILITY,
 			self::FORMS_PAGE_SLUG,
 			array( $this, 'render_forms_page' )
 		);
@@ -143,17 +145,30 @@ final class CPR_Plugin {
 			'admin.php',
 			esc_html__( 'Participation Registrations', 'confirm-participation-registration' ),
 			esc_html__( 'Participation Registrations', 'confirm-participation-registration' ),
-			'manage_options',
+			self::ADMIN_CAPABILITY,
 			self::REGISTRATIONS_SLUG,
 			array( $this, 'render_registrations_page' )
 		);
 	}
 
 	/**
+	 * Register fallback callbacks for direct URLs that skip a menu parent match.
+	 */
+	public function register_direct_admin_page_hooks() {
+		add_action( get_plugin_page_hookname( self::FORMS_PAGE_SLUG, 'edit.php' ), array( $this, 'render_forms_page' ) );
+		add_action( get_plugin_page_hookname( self::FORMS_PAGE_SLUG, 'edit.php?post_type=post' ), array( $this, 'render_forms_page' ) );
+		add_action( get_plugin_page_hookname( self::FORMS_PAGE_SLUG, 'admin.php' ), array( $this, 'render_forms_page' ) );
+
+		add_action( get_plugin_page_hookname( self::REGISTRATIONS_SLUG, 'edit.php' ), array( $this, 'render_registrations_page' ) );
+		add_action( get_plugin_page_hookname( self::REGISTRATIONS_SLUG, 'edit.php?post_type=post' ), array( $this, 'render_registrations_page' ) );
+		add_action( get_plugin_page_hookname( self::REGISTRATIONS_SLUG, 'admin.php' ), array( $this, 'render_registrations_page' ) );
+	}
+
+	/**
 	 * Render the admin page for enabling/disabling forms.
 	 */
 	public function render_forms_page() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( self::ADMIN_CAPABILITY ) ) {
 			wp_die( esc_html__( 'You are not allowed to manage participation forms.', 'confirm-participation-registration' ) );
 		}
 
@@ -236,7 +251,7 @@ final class CPR_Plugin {
 	 * Render the admin registrations/statistics page.
 	 */
 	public function render_registrations_page() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( self::ADMIN_CAPABILITY ) ) {
 			wp_die( esc_html__( 'You are not allowed to view participation registrations.', 'confirm-participation-registration' ) );
 		}
 
@@ -347,7 +362,7 @@ final class CPR_Plugin {
 	 * Enable or disable registration for one post.
 	 */
 	public function handle_update_registration_status() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( self::ADMIN_CAPABILITY ) ) {
 			wp_die( esc_html__( 'You are not allowed to update participation forms.', 'confirm-participation-registration' ) );
 		}
 
@@ -367,7 +382,7 @@ final class CPR_Plugin {
 	 * Bulk enable or disable registration for all published posts.
 	 */
 	public function handle_bulk_update_registration_status() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( self::ADMIN_CAPABILITY ) ) {
 			wp_die( esc_html__( 'You are not allowed to update participation forms.', 'confirm-participation-registration' ) );
 		}
 
@@ -438,7 +453,7 @@ final class CPR_Plugin {
 	 * Export registrations for one post as CSV.
 	 */
 	public function handle_csv_export() {
-		if ( ! current_user_can( 'manage_options' ) ) {
+		if ( ! current_user_can( self::ADMIN_CAPABILITY ) ) {
 			wp_die( esc_html__( 'You are not allowed to export participation registrations.', 'confirm-participation-registration' ) );
 		}
 
